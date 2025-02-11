@@ -21,7 +21,21 @@ jobs:
         password: ${{ secrets.ACR_PASSWORD }}
         logout: false
 
+    - name: Debug - Print ACR Secrets
+      run: |
+        echo "ACR_REGISTRY_ADDRESS: ${{ secrets.ACR_REGISTRY_ADDRESS }}"
+        echo "ACR_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}"
+
     - name: Use Skopeo Tools Sync Image to ACR
       run: |
         #!/usr/bin/env bash
-        skopeo copy docker://docker.io/apache/airflow:latest docker://${{ secrets.ACR_REGISTRY_ADDRESS }}/${{ secrets.ACR_NAMESPACE }}/apache-airflow:latest
+        REGISTRY_ADDRESS="${{ secrets.ACR_REGISTRY_ADDRESS }}"
+        NAMESPACE="${{ secrets.ACR_NAMESPACE }}"
+        IMAGE_NAME="apache-airflow"
+        TAG="latest"
+        DESTINATION="docker://${REGISTRY_ADDRESS}/${NAMESPACE}/${IMAGE_NAME}:${TAG}"
+
+        echo "Skopeo Copy Command:"
+        echo "skopeo copy docker://docker.io/apache/airflow:${TAG} ${DESTINATION}"
+
+        skopeo copy docker://docker.io/apache/airflow:${TAG} "${DESTINATION}"
